@@ -6,8 +6,8 @@ A Clone of [DevDojo Auth](https://github.com/devdojo/auth) with support of RTL, 
 
 ## Screenshots
 
-![Login](https://raw.githubusercontent.com/tomatophp/filament-accounts/master/arts/login.png)
-![Register](https://raw.githubusercontent.com/tomatophp/filament-accounts/master/arts/register.png)
+![Login](https://raw.githubusercontent.com/tomatophp/filament-accounts-auth/master/arts/login.png)
+![Register](https://raw.githubusercontent.com/tomatophp/filament-accounts-auth/master/arts/register.png)
 
 ## Installation
 
