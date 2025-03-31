@@ -1,8 +1,13 @@
+![Screenshot](https://raw.githubusercontent.com/tomatophp/filament-accounts-auth/master/arts/3x1io-tomato-accounts-auth.jpg)
 
-
-## TomatoPHP Auth
+## Filament Accounts Builder Auth
 
 A Clone of [DevDojo Auth](https://github.com/devdojo/auth) with support of RTL, Translations and using [Filament Accounts Builder](https://github.com/tomatophp/filament-accounts) as an auth driver.
+
+## Screenshots
+
+![Login](https://raw.githubusercontent.com/tomatophp/filament-accounts/master/arts/login.png)
+![Register](https://raw.githubusercontent.com/tomatophp/filament-accounts/master/arts/register.png)
 
 ## Installation
 

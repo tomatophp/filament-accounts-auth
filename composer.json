@@ -1,6 +1,6 @@
 {
-    "name": "tomatophp/auth",
-    "description": "The auth package to make authentication in your laravel applications easy to use.",
+    "name": "tomatophp/filament-accounts-auth",
+    "description": "The auth package from DevDojo for Filament Account Builder.",
     "keywords": [
         "devdojo",
         "auth",
@@ -35,7 +35,9 @@
         "livewire/livewire": "^3.6",
         "livewire/volt": "^1.7",
         "pragmarx/google2fa": "^8.0",
-        "filament/filament": "^3.3"
+        "filament/filament": "^3.3",
+        "tomatophp/filament-accounts": "^2.3",
+        "tomatophp/filament-settings-hub": "^2.0"
     },
     "require-dev": {
         "alebatistella/duskapiconf": "^1.2",

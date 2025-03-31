@@ -36,9 +36,9 @@ class AuthServiceProvider extends ServiceProvider
             ], 'auth:config');
 
             // Publishing the views.
-            /*$this->publishes([
+            $this->publishes([
                 __DIR__.'/../resources/views' => resource_path('views/vendor/auth'),
-            ], 'views');*/
+            ], 'views');
 
             // Publishing assets.
             $this->publishes([
