@@ -1,0 +1,27 @@
+providers:
+  - Livewire\LivewireServiceProvider
+  - BladeUI\Heroicons\BladeHeroiconsServiceProvider
+  - Codeat3\BladePhosphorIcons\BladePhosphorIconsServiceProvider
+  - BladeUI\Icons\BladeIconsServiceProvider
+  - Filament\Actions\ActionsServiceProvider
+  - Filament\FilamentServiceProvider
+  - Filament\Forms\FormsServiceProvider
+  - Filament\Infolists\InfolistsServiceProvider
+  - Filament\Notifications\NotificationsServiceProvider
+  - Filament\Support\SupportServiceProvider
+  - Filament\Tables\TablesServiceProvider
+  - Filament\Widgets\WidgetsServiceProvider
+  - RyanChandler\BladeCaptureDirective\BladeCaptureDirectiveServiceProvider
+  - Laravel\Folio\FolioServiceProvider
+  - Livewire\Volt\VoltServiceProvider
+  - Devdojo\Auth\AuthServiceProvider
+workbench:
+  welcome: true
+  install: true
+  start: /
+  guard: testing
+  discovers:
+    web: true
+    api: true
+    commands: false
+    views: true

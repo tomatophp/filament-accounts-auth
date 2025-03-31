@@ -25,33 +25,38 @@
     ],
     "require": {
         "php": "^8.2|^8.3",
-        "illuminate/support": "^12.0",
-        "laravel/folio": "^1.1",
-        "livewire/livewire": "^3.6",
-        "livewire/volt": "^1.6",
+        "bacon/bacon-qr-code": "^3.0",
+        "calebporzio/sushi": "^2.5",
         "codeat3/blade-phosphor-icons": "^2.3",
         "devdojo/config-writer": "^0.0.7",
+        "illuminate/support": "^12.3",
+        "laravel/folio": "^1.1",
         "laravel/socialite": "^5.18",
-        "calebporzio/sushi": "^2.5",
+        "livewire/livewire": "^3.6",
+        "livewire/volt": "^1.7",
         "pragmarx/google2fa": "^8.0",
-        "bacon/bacon-qr-code": "^3.0"
+        "filament/filament": "^3.3"
     },
     "require-dev": {
-        "laravel/pint": "^1.18",
-        "nunomaduro/larastan": "^2.9",
-        "orchestra/testbench": "^9.5",
-        "pestphp/pest": "^2.36",
-        "laravel/dusk": "*",
-        "pestphp/pest-plugin-laravel": "^2.4",
-        "pestphp/pest-plugin-livewire": "^2.1",
+        "alebatistella/duskapiconf": "^1.2",
+        "blade-ui-kit/blade-heroicons": "^2.6",
+        "laravel/dusk": "^8.3",
+        "laravel/pint": "^1.21",
+        "nunomaduro/larastan": "^3.1",
+        "orchestra/testbench": "^10.0",
+        "pestphp/pest": "^3.7",
+        "pestphp/pest-plugin-laravel": "^3.1",
+        "pestphp/pest-plugin-livewire": "^3.0",
         "phpstan/extension-installer": "^1.4",
-        "phpstan/phpstan-deprecation-rules": "^1.2",
-        "phpstan/phpstan-phpunit": "^1.4"
+        "phpstan/phpstan-deprecation-rules": "^2.0",
+        "phpstan/phpstan-phpunit": "^2.0",
+        "protonemedia/laravel-dusk-fakes": "^1.8"
     },
     "autoload": {
         "psr-4": {
             "Devdojo\\Auth\\": "src",
-            "Devdojo\\Auth\\Tests\\": "tests"
+            "Devdojo\\Auth\\Tests\\": "tests",
+            "Devdojo\\Auth\\Tests\\Database\\Factories\\": "tests/database/factories"
         }
     },
     "autoload-dev": {
@@ -61,6 +66,7 @@
     },
     "scripts": {
         "testbench": "vendor/bin/testbench package:discover --ansi",
+        "db": "vendor/bin/testbench package:create-sqlite-db && vendor/bin/testbench migrate",
         "analyse": "vendor/bin/phpstan analyse src tests",
         "test": "vendor/bin/pest",
         "test-coverage": "vendor/bin/pest --coverage",
@@ -69,7 +75,8 @@
     "config": {
         "sort-packages": true,
         "allow-plugins": {
-            "pestphp/pest-plugin": true
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true
         }
     },
     "extra": {

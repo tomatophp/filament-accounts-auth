@@ -26,7 +26,7 @@
         'items-end' => $heading_alignment == 'right',
     ])
 >
-        <x-logo class="w-16"/>
+{{--        <x-logo class="w-16"/>--}}
     </a>
     <h1 id="auth-heading-title" class="mt-1 text-xl font-medium leading-9">{{ $text ?? '' }}</h1>
     @if(($description ?? false) && $show_subheadline)

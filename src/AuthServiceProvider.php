@@ -2,9 +2,13 @@
 
 namespace Devdojo\Auth;
 
+use BladeUI\Icons\Factory;
+use BladeUI\Icons\IconsManifest;
 use Devdojo\Auth\Http\Middleware\TwoFactorChallenged;
 use Devdojo\Auth\Http\Middleware\TwoFactorEnabled;
 use Devdojo\Auth\Http\Middleware\ViewAuthSetup;
+use Illuminate\Contracts\Filesystem\Factory as FilesystemFactory;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
@@ -25,17 +29,6 @@ class AuthServiceProvider extends ServiceProvider
         Route::middlewareGroup('two-factor-challenged', [TwoFactorChallenged::class]);
         Route::middlewareGroup('two-factor-enabled', [TwoFactorEnabled::class]);
         Route::middlewareGroup('view-auth-setup', [ViewAuthSetup::class]);
-
-        /*
-         * Optional methods to load your package assets
-         */
-        // $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'auth');
-        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'auth');
-        // $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-        $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
-
-        $this->registerAuthFolioDirectory();
-        $this->registerVoltDirectory();
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
@@ -81,6 +74,31 @@ class AuthServiceProvider extends ServiceProvider
 
         $this->handleStarterKitFunctionality();
         $this->loadDynamicRoutesForTesting();
+        $this->registerAuthFolioDirectory();
+        $this->registerVoltDirectory();
+    }
+
+    protected function prepareSets(array $config = [], array $setOptions = []): Factory
+    {
+        $factory = new Factory(
+            new Filesystem,
+            $this->app->make(IconsManifest::class),
+            $this->app->make(FilesystemFactory::class),
+            $config,
+        );
+
+        $factory = $factory
+            ->add('default', array_merge([
+                'path' => __DIR__ . '/../vendor/blade-ui-kit/blade-heroicons/resources/svg',
+                'prefix' => 'icon',
+            ], $setOptions['default'] ?? []))
+            ->add('zondicons', array_merge([
+                'path' => __DIR__ . '/../vendor/codeat3/blade-phosphor-icons/resources/svg',
+                'prefix' => 'phosphor',
+            ], $setOptions['phosphor'] ?? []));
+
+        return $this->app->instance(Factory::class, $factory);
+
     }
 
     private function registerAuthFolioDirectory(): void
@@ -97,7 +115,6 @@ class AuthServiceProvider extends ServiceProvider
 
     private function registerVoltDirectory(): void
     {
-
         $this->app->booted(function () {
             Volt::mount(__DIR__ . '/../resources/views/pages');
         });
@@ -129,6 +146,14 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        /*
+          * Optional methods to load your package assets
+          */
+        // $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'auth');
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'auth');
+        // $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+
         // Automatically apply the package configuration
         $this->mergeConfigFrom(__DIR__ . '/../config/devdojo/auth/settings.php', 'devdojo.auth.settings');
         $this->mergeConfigFrom(__DIR__ . '/../config/devdojo/auth/appearance.php', 'devdojo.auth.appearance');
@@ -150,6 +175,10 @@ class AuthServiceProvider extends ServiceProvider
         // Register the DuskServiceProvider
         if (($this->app->environment('local') || $this->app->environment('testing')) && class_exists(\Laravel\Dusk\DuskServiceProvider::class)) {
             $this->app->register(\Devdojo\Auth\Providers\DuskServiceProvider::class);
+        }
+
+        if ($this->app->environment('testing')) {
+            $this->prepareSets();
         }
     }
 
