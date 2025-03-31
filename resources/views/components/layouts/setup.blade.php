@@ -6,7 +6,7 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>Authentication Setup</title>
-        @vite(['auth/resources/css/auth.css', 'auth/resources/js/auth.js'])
+        @vite(['vendor/tomatophp/filament-accounts-auth/resources/css/auth.css', 'vendor/tomatophp/filament-accounts-auth/resources/js/auth.js'])
 
         <script src= "https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css">
