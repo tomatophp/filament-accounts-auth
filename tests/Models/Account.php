@@ -3,6 +3,7 @@
 namespace Devdojo\Auth\Tests\Models;
 
 use Devdojo\Auth\Models\User as AuthUser;
+use Devdojo\Auth\Tests\Database\Factories\AccountFactory;
 use Filament\Models\Contracts\HasAvatar;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -97,8 +98,8 @@ class Account extends AuthUser implements HasAvatar
         return $this->getFilamentAvatarUrl();
     }
 
-    protected static function newFactory(): UserFactory
+    protected static function newFactory(): AccountFactory
     {
-        return UserFactory::new();
+        return AccountFactory::new();
     }
 }

@@ -2,6 +2,9 @@
 
 namespace Devdojo\Auth;
 
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Lang;
+
 class Helper
 {
     // Build your next great package.
@@ -57,5 +60,48 @@ class Helper
 
         // Return the RGB string
         return "$r $g $b";
+    }
+
+    /**
+     * The account model class used by the "accounts" guard.
+     *
+     * @return class-string<Model>
+     */
+    public static function accountModel(): string
+    {
+        return config('auth.providers.accounts.model') ?? config('filament-accounts.model');
+    }
+
+    /**
+     * Get an auth page language line. Host translations in
+     * lang/vendor/devdojo-auth/{locale}/language.php win over the
+     * devdojo.auth.language config (which the setup Language page edits).
+     */
+    public static function language(string $key): string
+    {
+        $translationKey = 'devdojo-auth::language.' . $key;
+
+        if (Lang::has($translationKey)) {
+            return (string) trans($translationKey);
+        }
+
+        return (string) config('devdojo.auth.language.' . $key, $key);
+    }
+
+    /**
+     * All auth page language lines, with host translations merged over the config.
+     *
+     * @return array<string, mixed>
+     */
+    public static function languageLines(): array
+    {
+        $lines = config('devdojo.auth.language', []);
+        $translated = trans('devdojo-auth::language');
+
+        if (is_array($translated)) {
+            $lines = array_replace_recursive($lines, $translated);
+        }
+
+        return $lines;
     }
 }

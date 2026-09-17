@@ -1,71 +1,54 @@
 <?php
 
-uses(
-    Devdojo\Auth\Tests\DuskTestCase::class,
-    // Illuminate\Foundation\Testing\DatabaseMigrations::class,
-)->in('Browser');
+use Devdojo\Auth\Tests\DuskTestCase;
+use Devdojo\Auth\Tests\Models\Account;
+use Devdojo\Auth\Tests\TestCase;
+use Illuminate\Support\Facades\File;
 
 /*
 |--------------------------------------------------------------------------
 | Test Case
 |--------------------------------------------------------------------------
 |
-| The closure you provide to your test functions is always bound to a specific PHPUnit test
-| case class. By default, that class is "PHPUnit\Framework\TestCase". Of course, you may
-| need to change it using the "pest()" function to bind a different classes or traits.
+| Browser (Dusk) tests need a running Chrome driver and a full application,
+| they are not part of the default suite (see phpunit.xml).
 |
 */
 
-pest()->extend(Devdojo\Auth\Tests\TestCase::class)
+uses(DuskTestCase::class)->in('Browser');
+
+pest()->extend(TestCase::class)
     ->in('Feature');
 
-/*
-|--------------------------------------------------------------------------
-| Expectations
-|--------------------------------------------------------------------------
-|
-| When you're writing tests, you often need to check that values meet certain conditions. The
-| "expect()" function gives you access to a set of "expectations" methods that you can use
-| to assert different things. Of course, you may extend the Expectation API at any time.
-|
-*/
-
-expect()->extend('toBeOne', function () {
-    return $this->toBe(1);
-});
-
-/*
-|--------------------------------------------------------------------------
-| Functions
-|--------------------------------------------------------------------------
-|
-| While Pest is very powerful out-of-the-box, you may have some testing code specific to your
-| project that you don't want to repeat in every file. Here you can also expose helpers as
-| global functions to help you to reduce the number of lines of code in your test files.
-|
-*/
-
-function something()
+/**
+ * @param  array<string, mixed>  $attributes
+ */
+function createAccount(array $attributes = []): Account
 {
-    // ..
+    return Account::factory()->create($attributes);
 }
 
-use App\Models\User;
-
-function loginAsUser(?User $user = null, $data = [])
+/**
+ * @param  array<string, mixed>  $attributes
+ */
+function loginAsAccount(array $attributes = [], string $guard = 'accounts'): Account
 {
-    $user = $user ?? User::factory()->create($data);
-    test()->actingAs($user);
+    $account = createAccount($attributes);
 
-    return $user;
+    test()->actingAs($account, $guard);
+
+    return $account;
 }
 
-function createUser($data)
+/**
+ * The setup pages only write to published config files (config/devdojo/auth/*.php).
+ */
+function publishAuthConfig(): void
 {
-    return User::factory()->create($data);
+    File::copyDirectory(dirname(__DIR__) . '/config/devdojo', base_path('config/devdojo'));
 }
 
-function withANewUser()
+function removePublishedAuthConfig(): void
 {
-    return test()->actingAs(User::factory()->create());
+    File::deleteDirectory(base_path('config/devdojo'));
 }

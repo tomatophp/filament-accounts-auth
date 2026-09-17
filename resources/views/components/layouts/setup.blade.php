@@ -6,7 +6,12 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>Authentication Setup</title>
-        @vite(['vendor/tomatophp/filament-accounts-auth/resources/css/auth.css', 'vendor/tomatophp/filament-accounts-auth/resources/js/auth.js'])
+        @if(config('devdojo.auth.settings.dev_mode'))
+            @vite(['vendor/tomatophp/filament-accounts-auth/resources/css/auth.css', 'vendor/tomatophp/filament-accounts-auth/resources/js/auth.js'])
+        @else
+            <script src="{{ asset('/auth/build/assets/scripts.js') }}"></script>
+            <link rel="stylesheet" href="{{ asset('/auth/build/assets/styles.css') }}" />
+        @endif
 
         <script src= "https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css">

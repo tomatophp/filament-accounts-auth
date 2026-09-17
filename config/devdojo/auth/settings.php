@@ -11,7 +11,7 @@ return [
     'registration_include_password_confirmation_field' => false,
     'registration_require_email_verification' => false,
     'enable_branding' => false,
-    'dev_mode' => true,
+    'dev_mode' => false,
     'enable_2fa' => false, // Enable or disable 2FA functionality globally
     'enable_email_registration' => true,
     'login_show_social_providers' => true,

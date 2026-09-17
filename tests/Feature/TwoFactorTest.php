@@ -1,76 +1,119 @@
 <?php
 
-use App\Models\User;
-use Illuminate\Support\Facades\Session;
+use Devdojo\Auth\Tests\Models\Account;
+use Livewire\Volt\Volt;
+use PragmaRX\Google2FA\Google2FA;
 
-// beforeEach(function () {
-//    // Ensure each test starts with a clean slate
-//    User::query()->delete();
-// });
-//
-// test('Two factor challenge page redirects to login for guest user', function () {
-//    $this->get('auth/two-factor-challenge')
-//        ->assertRedirect('auth/login');
-// });
-//
-// test('Two factor challenge page redirects if user is logged in and they don\'t have the login.id session', function () {
-//    withANewUser()->get('auth/two-factor-challenge')
-//        ->assertRedirect('auth/login');
-// });
-//
-// test('User logs in when two factor disabled, the login.id session should not be created', function () {
-//    config()->set('devdojo.auth.settings.enable_2fa', false);
-//    $user = createUser(['password' => \Hash::make('password123'), 'two_factor_confirmed_at' => now()]);
-//
-//    Livewire::test('auth.login')
-//        ->set('email', $user->email)
-//        ->set('showPasswordField', true)
-//        ->set('password', 'password123')
-//        ->call('authenticate')
-//        ->assertHasNoErrors()
-//        ->assertRedirect(config('devdojo.auth.settings.redirect_after_auth'));
-//
-//    $this->assertTrue(! Session::has('login.id'));
-// });
-//
-// test('User logs in when two factor enabled, the login.id session should be created', function () {
-//    config()->set('devdojo.auth.settings.enable_2fa', true);
-//    $user = createUser(['password' => \Hash::make('password123'), 'two_factor_confirmed_at' => now()]);
-//
-//    Livewire::test('auth.login')
-//        ->set('email', $user->email)
-//        ->set('showPasswordField', true)
-//        ->set('password', 'password123')
-//        ->call('authenticate')
-//        ->assertHasNoErrors()
-//        ->assertRedirect('auth/two-factor-challenge');
-//
-//    $this->assertTrue(Session::has('login.id'));
-// });
-//
-// test('User logs in without 2FA, they should not be redirected to auth/two-factor-challenge page', function () {
-//    config()->set('devdojo.auth.settings.enable_2fa', true);
-//    $user = createUser(['password' => \Hash::make('password123')]);
-//
-//    Livewire::test('auth.login')
-//        ->set('email', $user->email)
-//        ->set('showPasswordField', true)
-//        ->set('password', 'password123')
-//        ->call('authenticate')
-//        ->assertHasNoErrors()
-//        ->assertRedirect(config('devdojo.auth.settings.redirect_after_auth'));
-// });
-//
-// it('user cannot view two factor challenge page logging in if it\'s disabled', function () {
-//    config()->set('devdojo.auth.settings.enable_2fa', false);
-//    $user = loginAsUser();
-//    $this->get('user/two-factor-authentication')
-//        ->assertRedirect('/');
-// });
-//
-// it('user can view two factor challenge page when it\'s enabled', function () {
-//    config()->set('devdojo.auth.settings.enable_2fa', true);
-//    $user = loginAsUser();
-//    $this->get('user/two-factor-authentication')
-//        ->assertOk();
-// });
+/**
+ * @param  array<int, string>  $recoveryCodes
+ */
+function accountWithTwoFactor(string $secret, array $recoveryCodes = ['recovery-code-1']): Account
+{
+    $account = createAccount();
+
+    $account->forceFill([
+        'two_factor_secret' => encrypt($secret),
+        'two_factor_recovery_codes' => encrypt(json_encode($recoveryCodes)),
+        'two_factor_confirmed_at' => now(),
+    ])->save();
+
+    return $account;
+}
+
+it('sends accounts with two factor authentication to the challenge', function () {
+    config()->set('devdojo.auth.settings.enable_2fa', true);
+    $account = accountWithTwoFactor(app(Google2FA::class)->generateSecretKey());
+
+    Volt::test('auth.login')
+        ->set('email', $account->email)
+        ->set('showPasswordField', true)
+        ->set('password', 'password')
+        ->call('authenticate')
+        ->assertHasNoErrors()
+        ->assertRedirect(route('auth.two-factor-challenge'));
+
+    expect(session('login.id'))->toBe($account->id)
+        ->and(auth('accounts')->check())->toBeFalse();
+});
+
+it('skips the challenge when two factor authentication is disabled', function () {
+    config()->set('devdojo.auth.settings.enable_2fa', false);
+    $account = accountWithTwoFactor(app(Google2FA::class)->generateSecretKey());
+
+    Volt::test('auth.login')
+        ->set('email', $account->email)
+        ->set('showPasswordField', true)
+        ->set('password', 'password')
+        ->call('authenticate')
+        ->assertHasNoErrors()
+        ->assertRedirect();
+
+    expect(session()->has('login.id'))->toBeFalse()
+        ->and(auth('accounts')->id())->toBe($account->id);
+});
+
+it('logs in with a valid authenticator code on the accounts guard', function () {
+    $google2fa = app(Google2FA::class);
+    $secret = $google2fa->generateSecretKey();
+    $account = accountWithTwoFactor($secret);
+    session()->put('login.id', $account->id);
+
+    Volt::test('auth.two-factor-challenge')
+        ->call('submitCode', $google2fa->getCurrentOtp($secret))
+        ->assertHasNoErrors()
+        ->assertRedirect();
+
+    expect(auth('accounts')->id())->toBe($account->id)
+        ->and(session()->has('login.id'))->toBeFalse();
+});
+
+it('rejects an invalid authenticator code', function () {
+    $account = accountWithTwoFactor(app(Google2FA::class)->generateSecretKey());
+    session()->put('login.id', $account->id);
+
+    Volt::test('auth.two-factor-challenge')
+        ->call('submitCode', 'abcdef')
+        ->assertHasErrors(['auth_code']);
+
+    expect(auth('accounts')->check())->toBeFalse();
+});
+
+it('logs in with a recovery code on the accounts guard', function () {
+    $account = accountWithTwoFactor(app(Google2FA::class)->generateSecretKey());
+    session()->put('login.id', $account->id);
+
+    Volt::test('auth.two-factor-challenge')
+        ->set('recovery_code', 'recovery-code-1')
+        ->call('submit_recovery_code')
+        ->assertHasNoErrors();
+
+    expect(auth('accounts')->id())->toBe($account->id);
+});
+
+it('rejects an invalid recovery code', function () {
+    $account = accountWithTwoFactor(app(Google2FA::class)->generateSecretKey());
+    session()->put('login.id', $account->id);
+
+    Volt::test('auth.two-factor-challenge')
+        ->set('recovery_code', 'wrong-code')
+        ->call('submit_recovery_code')
+        ->assertHasErrors(['recovery_code']);
+
+    expect(auth('accounts')->check())->toBeFalse();
+});
+
+it('redirects the two factor settings page when two factor authentication is disabled', function () {
+    config()->set('devdojo.auth.settings.enable_2fa', false);
+    loginAsAccount(guard: 'web');
+
+    $this->get('/user/two-factor-authentication')->assertRedirect('/');
+});
+
+it('renders the two factor settings page when two factor authentication is enabled', function () {
+    config()->set('devdojo.auth.settings.enable_2fa', true);
+    loginAsAccount(guard: 'web');
+
+    $this->get('/user/two-factor-authentication')
+        ->assertOk()
+        ->assertSee('Two factor authentication disabled.');
+});

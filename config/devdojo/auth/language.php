@@ -28,6 +28,7 @@ return [
         'show_subheadline' => false,
         'name' => 'Name',
         'email_address' => 'Email Address',
+        'phone' => 'Phone',
         'password' => 'Password',
         'password_confirmation' => 'Confirm Password',
         'already_have_an_account' => 'Already have an account?',

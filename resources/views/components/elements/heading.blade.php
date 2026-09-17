@@ -26,7 +26,12 @@
         'items-end' => $heading_alignment == 'right',
     ])
 >
-        <x-logo class="w-16"/>
+        <x-auth::elements.logo
+         :height="config('devdojo.auth.appearance.logo.height')"
+         :isImage="(config('devdojo.auth.appearance.logo.type') == 'image')"
+         :imageSrc="config('devdojo.auth.appearance.logo.image_src')"
+         :svgString="config('devdojo.auth.appearance.logo.svg_string')"
+         />
     </a>
     <h1 id="auth-heading-title" class="mt-1 text-xl font-medium leading-9">{{ $text ?? '' }}</h1>
     @if(($description ?? false) && $show_subheadline)

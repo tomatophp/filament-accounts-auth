@@ -1,100 +1,87 @@
 <?php
 
-use Illuminate\Support\Facades\Auth;
+use Devdojo\Auth\Tests\Models\Account;
+use Livewire\Volt\Volt;
 
-// beforeEach(function () {
-//    config()->set('devdojo.auth.settings.registration_enabled', true);
-//    config()->set('devdojo.auth.settings.enable_email_registration', true);
-// });
-//
-// it('allows access to registration page when enabled', function () {
-//    Livewire::test('auth.register')
-//        ->assertOk()
-//        ->assertDontSee('Registrations are currently disabled');
-// });
-//
-// it('redirects to login when registrations are disabled', function () {
-//    config()->set('devdojo.auth.settings.registration_enabled', false);
-//
-//    Livewire::test('auth.register')
-//        ->assertRedirect(route('auth.login'));
-//
-//    expect(session('error'))->toBe(
-//        config('devdojo.auth.language.register.registrations_disabled', 'Registrations are currently disabled.')
-//    );
-// });
-//
-// it('allows registration when enabled', function () {
-//    $component = Livewire::test('auth.register')
-//        ->set('email', 'test@example.com')
-//        ->set('password', 'password123')
-//        ->set('name', 'Test User')
-//        ->call('register');
-//
-//    expect(Auth::check())->toBeTrue();
-//    expect(Auth::user()->email)->toBe('test@example.com');
-// });
-//
-// it('preserves other registration settings when enabled', function () {
-//    config()->set('devdojo.auth.settings.registration_include_name_field', true);
-//    config()->set('devdojo.auth.settings.registration_show_password_same_screen', true);
-//
-//    $component = Livewire::test('auth.register');
-//
-//    expect($component->get('showNameField'))->toBeTrue();
-//    expect($component->get('showPasswordField'))->toBeTrue();
-// });
-//
-// it('hides email registration form when email registration is disabled', function () {
-//    config()->set('devdojo.auth.settings.enable_email_registration', false);
-//
-//    $component = Livewire::test('auth.register');
-//
-//    expect($component->get('showEmailRegistration'))->toBeFalse();
-//    expect($component->get('showEmailField'))->toBeFalse();
-//    expect($component->get('showPasswordField'))->toBeFalse();
-//    expect($component->get('showNameField'))->toBeFalse();
-// });
-//
-// it('shows email registration form when email registration is enabled', function () {
-//    config()->set('devdojo.auth.settings.enable_email_registration', true);
-//
-//    $component = Livewire::test('auth.register');
-//
-//    expect($component->get('showEmailRegistration'))->toBeTrue();
-//    expect($component->get('showEmailField'))->toBeTrue();
-// });
-//
-// it('prevents email registration when disabled', function () {
-//    config()->set('devdojo.auth.settings.enable_email_registration', false);
-//
-//    $component = Livewire::test('auth.register')
-//        ->set('email', 'test@example.com')
-//        ->set('password', 'password123')
-//        ->call('register');
-//
-//    expect(Auth::check())->toBeFalse();
-//    expect(session('error'))->toBe(
-//        config('devdojo.auth.language.register.email_registration_disabled', 'Email registration is currently disabled. Please use social login.')
-//    );
-// });
-//
-// it('validates empty rules when email registration is disabled', function () {
-//    config()->set('devdojo.auth.settings.enable_email_registration', false);
-//
-//    $component = Livewire::test('auth.register');
-//
-//    expect($component->instance()->rules())->toBeEmpty();
-// });
-//
-// it('preserves social login functionality when email registration is disabled', function () {
-//    config()->set('devdojo.auth.settings.enable_email_registration', false);
-//
-//    config()->set('devdojo.auth.providers', [
-//        'google' => ['name' => 'Google', 'active' => true],
-//        'facebook' => ['name' => 'Facebook', 'active' => false],
-//    ]);
-//
-//    Livewire::test('auth.register')
-//        ->assertSee('Google');
-// });
+beforeEach(function () {
+    config()->set('filament-accounts.login_by', 'email');
+});
+
+it('registers an account and logs it in on the accounts guard', function () {
+    Volt::test('auth.register')
+        ->set('name', 'Jane Doe')
+        ->set('email', 'jane@example.com')
+        ->set('phone', '0100000000')
+        ->set('password', 'secret1234')
+        ->call('register')
+        ->assertHasNoErrors()
+        ->assertRedirect();
+
+    $account = Account::query()->where('email', 'jane@example.com')->firstOrFail();
+
+    expect($account->username)->toBe('jane@example.com')
+        ->and($account->name)->toBe('Jane Doe')
+        ->and(auth('accounts')->id())->toBe($account->id);
+});
+
+it('uses the phone as username when accounts log in by phone', function () {
+    config()->set('filament-accounts.login_by', 'phone');
+
+    Volt::test('auth.register')
+        ->set('name', 'Jane Doe')
+        ->set('email', 'jane@example.com')
+        ->set('phone', '0100000000')
+        ->set('password', 'secret1234')
+        ->call('register')
+        ->assertHasNoErrors();
+
+    expect(Account::query()->where('email', 'jane@example.com')->value('username'))->toBe('0100000000');
+});
+
+it('validates the registration fields', function () {
+    Volt::test('auth.register')
+        ->set('email', 'not-an-email')
+        ->set('password', 'short')
+        ->call('register')
+        ->assertHasErrors(['email', 'phone', 'password']);
+
+    expect(Account::query()->count())->toBe(0);
+});
+
+it('rejects an email that is already registered', function () {
+    createAccount(['email' => 'taken@example.com']);
+
+    Volt::test('auth.register')
+        ->set('name', 'Jane Doe')
+        ->set('email', 'taken@example.com')
+        ->set('phone', '0100000000')
+        ->set('password', 'secret1234')
+        ->call('register')
+        ->assertHasErrors(['email']);
+});
+
+it('requires a matching password confirmation when configured', function () {
+    config()->set('devdojo.auth.settings.registration_include_password_confirmation_field', true);
+
+    Volt::test('auth.register')
+        ->assertSet('showPasswordConfirmationField', true)
+        ->set('name', 'Jane Doe')
+        ->set('email', 'jane@example.com')
+        ->set('phone', '0100000000')
+        ->set('password', 'secret1234')
+        ->set('password_confirmation', 'different-password')
+        ->call('register')
+        ->assertHasErrors(['password']);
+});
+
+it('asks for the password on a second step when configured', function () {
+    config()->set('devdojo.auth.settings.registration_show_password_same_screen', false);
+
+    Volt::test('auth.register')
+        ->assertSet('showPasswordField', false)
+        ->set('name', 'Jane Doe')
+        ->set('email', 'jane@example.com')
+        ->call('register')
+        ->assertHasNoErrors()
+        ->assertSet('showPasswordField', true);
+});

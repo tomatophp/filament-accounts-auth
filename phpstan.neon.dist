@@ -1,0 +1,5 @@
+# Larastan is loaded automatically by phpstan/extension-installer.
+parameters:
+    level: 0
+    paths:
+        - src

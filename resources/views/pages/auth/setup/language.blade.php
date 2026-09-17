@@ -5,7 +5,7 @@ use Livewire\Volt\Component;
 use Livewire\Attributes\Validate;
 use Devdojo\Auth\Helper;
 
-middleware(['auth:web']);
+middleware(['view-auth-setup']);
 name('auth.setup.language');
 
 new class extends Component
@@ -15,14 +15,14 @@ new class extends Component
     private $config;
 
     public function mount(){
-        $this->language = (object)trans('circlexo.auth');
+        $this->language = (object)\Devdojo\Auth\Helper::languageLines();
     }
 
     public function update($key, $value){
         \Config::write('devdojo.auth.language.' . $key, $value);
         Artisan::call('config:clear');
 
-        $this->language = (object)trans('circlexo.auth');
+        $this->language = (object)\Devdojo\Auth\Helper::languageLines();
         $this->js('savedMessageOpen()');
     }
 };

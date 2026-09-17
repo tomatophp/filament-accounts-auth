@@ -1,127 +1,80 @@
 <?php
 
-use Devdojo\Auth\Tests\Models\Account;
-use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Volt;
 
-use function Pest\Livewire\livewire;
+it('asks for the password after a valid email', function () {
+    $account = createAccount();
 
-// beforeEach(function () {
-//    // Ensure each test starts with a clean slate
-//    Account::query()->delete();
-// });
-//
-// it('validates email and password fields', function () {
-//    Volt::test('auth.register')
-//        ->set('email', 'invalid-email')
-//        ->set('password', '123')
-//        ->call('register')
-//        ->assertHasErrors(['email' => 'email', 'password' => 'min']);
-// });
+    Volt::test('auth.login')
+        ->set('email', $account->email)
+        ->call('authenticate')
+        ->assertHasNoErrors()
+        ->assertSet('showPasswordField', true);
+});
 
-// it('registers a new user and logs in', function () {
-//    $this->withoutExceptionHandling();
-//    $this->mock(Registered::class);
-//    config()->set('devdojo.auth.settings.registration_include_name_field', true);
-//    config()->set('devdojo.auth.settings.registration_require_email_verification', false);
-//
-//    Livewire::test('auth.register')
-//        ->set('email', 'user@example.com')
-//        ->set('password', 'secret1234')
-//        ->set('name', 'John Doe')
-//        ->call('register')
-//        ->assertHasNoErrors()
-//        ->assertRedirect(config('devdojo.auth.settings.redirect_after_auth'));
-//
-//    $this->assertTrue(Auth::check());
-//    $this->assertEquals('user@example.com', Auth::user()->email);
-//    $this->assertEquals('John Doe', Auth::user()->name);
-// });
-//
-// it('conditionally displays name and password fields based on configuration', function () {
-//    config()->set('devdojo.auth.settings.registration_include_name_field', true);
-//    config()->set('devdojo.auth.settings.registration_show_password_same_screen', true);
-//
-//    Livewire::test('auth.register')
-//        ->assertSet('showNameField', true)
-//        ->assertSet('showPasswordField', true)
-//        ->assertSeeHtml('wire:model="name"')
-//        ->assertSeeHtml('wire:model="password"')
-//        ->assertDontSeeHtml('wire:model="password_confirmation"');
-// });
-//
-// it('checks for required fields and validation errors', function () {
-//    Livewire::test('auth.register')
-//        ->set('email', 'not-an-email')
-//        ->call('register')
-//        ->assertHasErrors(['email' => 'email']);
-//
-//    Livewire::test('auth.register')
-//        ->set('password', 'short')
-//        ->call('register')
-//        ->assertHasErrors(['password' => 'min']);
-// });
-//
-// it('validates password confirmation field', function () {
-//    config()->set('devdojo.auth.settings.registration_include_password_confirmation_field', true);
-//
-//    Livewire::test('auth.register')
-//        ->set('password', 'secret1234')
-//        ->set('password_confirmation', 'differentpassword')
-//        ->call('register')
-//        ->assertHasErrors(['password' => 'confirmed']);
-// });
-//
-// it('conditionally displays password confirmation field based on configuration', function () {
-//    config()->set('devdojo.auth.settings.registration_include_password_confirmation_field', true);
-//    config()->set('devdojo.auth.settings.registration_show_password_same_screen', true);
-//
-//    Livewire::test('auth.register')
-//        ->assertSet('showPasswordField', true)
-//        ->assertSet('showPasswordConfirmationField', true)
-//        ->assertSeeHtml('wire:model="password_confirmation"');
-// });
-//
-// it('registers a new user with password confirmation and logs in', function () {
-//    $this->withoutExceptionHandling();
-//    $this->mock(Registered::class);
-//    config()->set('devdojo.auth.settings.registration_include_password_confirmation_field', true);
-//    config()->set('devdojo.auth.settings.registration_require_email_verification', false);
-//
-//    Livewire::test('auth.register')
-//        ->set('email', 'user@example.com')
-//        ->set('password', 'secret1234')
-//        ->set('password_confirmation', 'secret1234')
-//        ->set('name', 'John Doe')
-//        ->call('register')
-//        ->assertHasNoErrors()
-//        ->assertRedirect(config('devdojo.auth.settings.redirect_after_auth'));
-//
-//    $this->assertTrue(Auth::check());
-//    $this->assertEquals('user@example.com', Auth::user()->email);
-// });
-//
-// it('renders social login buttons if providers are available', function () {
-//    config()->set('devdojo.auth.providers', [
-//        'google' => [
-//            'name' => 'Google',
-//            'active' => true,
-//            'label' => 'Google',
-//        ],
-//        'facebook' => [
-//            'name' => 'Facebook',
-//            'active' => true,
-//            'label' => 'Facebook',
-//        ],
-//        'twitter' => [
-//            'name' => 'Twitter',
-//            'active' => false,
-//            'label' => 'Twitter',
-//        ],
-//    ]);
-//
-//    Livewire::test('auth.register')
-//        ->assertSee('Google')
-//        ->assertSee('Facebook')
-//        ->assertDontSee('Twitter');
-// });
+it('logs an account in on the accounts guard', function () {
+    $account = createAccount();
+
+    Volt::test('auth.login')
+        ->set('email', $account->email)
+        ->set('showPasswordField', true)
+        ->set('password', 'password')
+        ->call('authenticate')
+        ->assertHasNoErrors()
+        ->assertRedirect();
+
+    expect(auth('accounts')->id())->toBe($account->id);
+});
+
+it('rejects a wrong password', function () {
+    $account = createAccount();
+
+    Volt::test('auth.login')
+        ->set('email', $account->email)
+        ->set('showPasswordField', true)
+        ->set('password', 'wrong-password')
+        ->call('authenticate')
+        ->assertHasErrors(['password']);
+
+    expect(auth('accounts')->check())->toBeFalse();
+});
+
+it('validates the email address', function () {
+    Volt::test('auth.login')
+        ->set('email', 'invalid-email')
+        ->call('authenticate')
+        ->assertHasErrors(['email']);
+});
+
+it('reports unknown accounts when configured', function () {
+    config()->set('devdojo.auth.settings.check_account_exists_before_login', true);
+
+    Volt::test('auth.login')
+        ->set('email', 'nobody@example.com')
+        ->call('authenticate')
+        ->assertHasErrors(['email'])
+        ->assertSet('showPasswordField', false);
+});
+
+it('shows the linked social providers for accounts without a password', function () {
+    $account = createAccount(['password' => null]);
+    $account->socialProviders()->create([
+        'provider_slug' => 'github',
+        'provider_user_id' => '123',
+        'token' => 'token',
+    ]);
+
+    Volt::test('auth.login')
+        ->set('email', $account->email)
+        ->call('authenticate')
+        ->assertSet('showSocialProviderInfo', true)
+        ->assertSet('userSocialProviders', ['github']);
+});
+
+it('logs an account out on the accounts guard', function () {
+    loginAsAccount();
+
+    $this->get('/auth/logout')->assertRedirect('/');
+
+    expect(auth('accounts')->check())->toBeFalse();
+});

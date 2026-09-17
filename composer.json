@@ -6,9 +6,12 @@
         "auth",
         "tomatophp",
         "rtl",
-        "filament-accountws"
+        "filament-accounts",
+        "livewire",
+        "folio",
+        "volt"
     ],
-    "homepage": "https://github.com/devdojo/auth",
+    "homepage": "https://tomatophp.com/en/plugins/filament-accounts-auth",
     "license": "MIT",
     "type": "library",
     "authors": [
@@ -24,35 +27,36 @@
         }
     ],
     "require": {
-        "php": "^8.2|^8.3",
+        "php": "^8.2",
         "bacon/bacon-qr-code": "^3.0",
         "calebporzio/sushi": "^2.5",
         "codeat3/blade-phosphor-icons": "^2.3",
         "devdojo/config-writer": "^0.0.7",
-        "illuminate/support": "^12.3",
+        "filament/filament": "^5.0",
+        "illuminate/support": "^12.0|^13.0",
         "laravel/folio": "^1.1",
-        "laravel/socialite": "^5.18",
-        "livewire/livewire": "^3.6",
-        "livewire/volt": "^1.7",
-        "pragmarx/google2fa": "^8.0",
-        "filament/filament": "^3.3",
-        "tomatophp/filament-accounts": "^2.3",
-        "tomatophp/filament-settings-hub": "^2.0"
+        "laravel/socialite": "^5.20",
+        "livewire/livewire": "^4.0",
+        "livewire/volt": "^1.10",
+        "pragmarx/google2fa": "^8.0|^9.0",
+        "tomatophp/filament-accounts": "^5.0"
     },
     "require-dev": {
         "alebatistella/duskapiconf": "^1.2",
         "blade-ui-kit/blade-heroicons": "^2.6",
+        "larastan/larastan": "^3.0",
         "laravel/dusk": "^8.3",
-        "laravel/pint": "^1.21",
-        "nunomaduro/larastan": "^3.1",
-        "orchestra/testbench": "^10.0",
-        "pestphp/pest": "^3.7",
-        "pestphp/pest-plugin-laravel": "^3.1",
-        "pestphp/pest-plugin-livewire": "^3.0",
+        "laravel/pint": "^1.24",
+        "orchestra/testbench": "^10.0|^11.0",
+        "pestphp/pest": "^4.0|^5.0",
+        "pestphp/pest-plugin-laravel": "^4.0|^5.0",
+        "pestphp/pest-plugin-livewire": "^4.0|^5.0",
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan-deprecation-rules": "^2.0",
-        "phpstan/phpstan-phpunit": "^2.0",
-        "protonemedia/laravel-dusk-fakes": "^1.8"
+        "phpstan/phpstan-phpunit": "^2.0"
+    },
+    "conflict": {
+        "devdojo/auth": "*"
     },
     "autoload": {
         "psr-4": {
@@ -91,5 +95,5 @@
             }
         }
     },
-    "version": "1.0.0"
+    "version": "5.0.0"
 }

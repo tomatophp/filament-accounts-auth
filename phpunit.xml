@@ -4,6 +4,7 @@
          bootstrap="vendor/autoload.php"
          colors="true"
 >
+    <!-- tests/Browser holds Dusk tests: they need a Chrome driver and a full application, so they are not part of the default suite. -->
     <testsuites>
         <testsuite name="Unit">
             <directory>tests/Unit</directory>

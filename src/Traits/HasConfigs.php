@@ -2,6 +2,8 @@
 
 namespace Devdojo\Auth\Traits;
 
+use Devdojo\Auth\Helper;
+
 trait HasConfigs
 {
     public $appearance = [];
@@ -13,7 +15,7 @@ trait HasConfigs
     public function loadConfigs()
     {
         $this->appearance = $this->configToArrayObject('devdojo.auth.appearance');
-        $this->language = $this->arrayToObject(trans('circlexo.auth'));
+        $this->language = $this->arrayToObject(Helper::languageLines());
         $this->settings = $this->configToArrayObject('devdojo.auth.settings');
     }
 

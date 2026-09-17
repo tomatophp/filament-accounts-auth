@@ -3,7 +3,12 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
 <title>{{ $title ?? 'Auth' }}</title>
-@vite(['vendor/tomatophp/filament-accounts-auth/resources/css/auth.css', 'vendor/tomatophp/filament-accounts-auth/resources/js/auth.js'])
+@if(config('devdojo.auth.settings.dev_mode'))
+    @vite(['vendor/tomatophp/filament-accounts-auth/resources/css/auth.css', 'vendor/tomatophp/filament-accounts-auth/resources/js/auth.js'])
+@else
+    <script src="{{ asset('/auth/build/assets/scripts.js') }}"></script>
+    <link rel="stylesheet" href="{{ asset('/auth/build/assets/styles.css') }}" />
+@endif
 
 @php
     $buttonRGBColor = \Devdojo\Auth\Helper::convertHexToRGBString(config('devdojo.auth.appearance.color.button'));
@@ -47,6 +52,6 @@
         --default-theme-mode: {{ filament()->getDefaultThemeMode()->value }};
     }
     body {
-        font-family: var(--font-family);
+        font-family: var(--font-family), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
 </style>

@@ -2,8 +2,7 @@
 
 namespace Devdojo\Auth\Models;
 
-use App\Models\Account;
-use App\Models\User;
+use Devdojo\Auth\Helper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -46,7 +45,7 @@ class SocialProviderUser extends Model
      */
     public function user(): BelongsTo
     {
-        return $this->belongsTo(Account::class, 'account_id');
+        return $this->belongsTo(Helper::accountModel(), 'account_id');
     }
 
     /**
